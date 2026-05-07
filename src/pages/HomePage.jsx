@@ -2,7 +2,7 @@ import { Ambulance, BadgeIndianRupee, Clock3, MapPin, ShieldPlus, Sparkles } fro
 import { Link } from 'react-router-dom'
 import PharmacyCard from '../components/PharmacyCard'
 import SearchBar from '../components/SearchBar'
-import { getSearchResults, pharmacies } from '../data/dummyData'
+import { getLivePharmacies, getLiveSearchResults } from '../utils/liveData'
 
 const features = [
   { title: 'Live stock view', icon: ShieldPlus, text: 'Check quantity, price, and pharmacy status before leaving home.' },
@@ -12,11 +12,12 @@ const features = [
 ]
 
 export default function HomePage() {
-  const quickResults = getSearchResults()
+  const livePharmacies = getLivePharmacies()
+  const quickResults = getLiveSearchResults()
     .filter((result) => result.available)
     .sort((a, b) => a.distanceKm - b.distanceKm)
     .slice(0, 3)
-  const nearest = pharmacies.sort((a, b) => a.distanceKm - b.distanceKm)[0]
+  const nearest = [...livePharmacies].sort((a, b) => a.distanceKm - b.distanceKm)[0]
 
   return (
     <>

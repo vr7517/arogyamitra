@@ -1,8 +1,9 @@
-import { LayoutDashboard, Menu, Pill, Search, ShieldCheck, X } from 'lucide-react'
+import { LayoutDashboard, LogOut, Menu, Pill, Search, UserCircle, X } from 'lucide-react'
 import { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { useApp } from '../hooks/useApp'
 import DarkModeToggle from './DarkModeToggle'
+import NotificationCenter from './NotificationCenter'
 
 const navItems = [
   { label: 'Home', to: '/' },
@@ -10,9 +11,9 @@ const navItems = [
 ]
 
 export default function Navbar() {
-  const { role, setRole } = useApp()
+  const { currentUser, isAuthenticated, logout, role } = useApp()
   const [open, setOpen] = useState(false)
-  const dashboardPath = role === 'admin' ? '/dashboard/admin' : '/dashboard/pharmacy'
+  const dashboardPath = role === 'admin' ? '/dashboard/admin' : role === 'pharmacy' ? '/dashboard/pharmacy' : '/dashboard/user'
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/85 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/82">
@@ -43,36 +44,47 @@ export default function Navbar() {
               {item.label}
             </NavLink>
           ))}
-          <NavLink
-            to={dashboardPath}
-            className="inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-bold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-900"
-          >
-            <LayoutDashboard size={16} />
-            Dashboard
-          </NavLink>
+          {isAuthenticated && (
+            <NavLink
+              to={dashboardPath}
+              className="inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-bold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-900"
+            >
+              <LayoutDashboard size={16} />
+              Dashboard
+            </NavLink>
+          )}
         </div>
 
         <div className="hidden items-center gap-3 md:flex">
-          <label className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
-            <ShieldCheck size={16} className="text-teal-500" />
-            <select
-              value={role}
-              onChange={(event) => setRole(event.target.value)}
-              className="bg-transparent outline-none"
-            >
-              <option value="user">User</option>
-              <option value="pharmacy">Pharmacy</option>
-              <option value="admin">Admin</option>
-            </select>
-          </label>
           <DarkModeToggle />
-          <Link
-            to="/search"
-            className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-teal-500 to-emerald-500 px-5 py-2.5 text-sm font-black text-white shadow-lg shadow-teal-500/25 transition hover:-translate-y-0.5"
-          >
-            <Search size={17} />
-            Login
-          </Link>
+          {isAuthenticated ? (
+            <>
+              <NotificationCenter />
+              <Link
+                to={dashboardPath}
+                className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
+              >
+                <UserCircle size={17} className="text-teal-500" />
+                {currentUser.name}
+              </Link>
+              <button
+                type="button"
+                onClick={logout}
+                className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-black text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-950"
+              >
+                <LogOut size={17} />
+                Logout
+              </button>
+            </>
+          ) : (
+            <Link
+              to="/login"
+              className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-teal-500 to-emerald-500 px-5 py-2.5 text-sm font-black text-white shadow-lg shadow-teal-500/25 transition hover:-translate-y-0.5"
+            >
+              <Search size={17} />
+              Login
+            </Link>
+          )}
         </div>
 
         <button
@@ -88,7 +100,7 @@ export default function Navbar() {
       {open && (
         <div className="border-t border-slate-200 bg-white px-4 py-4 md:hidden dark:border-slate-800 dark:bg-slate-950">
           <div className="grid gap-2">
-            {[...navItems, { label: 'Dashboard', to: dashboardPath }].map((item) => (
+            {[...navItems, ...(isAuthenticated ? [{ label: 'Dashboard', to: dashboardPath }] : [{ label: 'Login', to: '/login' }])].map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
@@ -98,15 +110,24 @@ export default function Navbar() {
                 {item.label}
               </Link>
             ))}
-            <select
-              value={role}
-              onChange={(event) => setRole(event.target.value)}
-              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold dark:border-slate-800 dark:bg-slate-900"
-            >
-              <option value="user">User</option>
-              <option value="pharmacy">Pharmacy</option>
-              <option value="admin">Admin</option>
-            </select>
+            {isAuthenticated && (
+              <>
+                <div className="flex items-center justify-between rounded-2xl border border-slate-200 px-4 py-3 dark:border-slate-800">
+                  <span className="text-sm font-black text-slate-700 dark:text-slate-200">Notifications</span>
+                  <NotificationCenter />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    logout()
+                    setOpen(false)
+                  }}
+                  className="rounded-2xl bg-slate-900 px-4 py-3 text-left text-sm font-black text-white dark:bg-white dark:text-slate-950"
+                >
+                  Logout {currentUser.name}
+                </button>
+              </>
+            )}
             <DarkModeToggle />
           </div>
         </div>

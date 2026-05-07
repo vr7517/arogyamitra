@@ -1,9 +1,17 @@
-import { Clock, IndianRupee, MapPin, ShieldCheck, Star } from 'lucide-react'
+import { CheckCircle2, Clock, IndianRupee, MapPin, ShieldCheck, Star } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useApp } from '../hooks/useApp'
 
 export default function PharmacyCard({ result }) {
-  const { showToast } = useApp()
+  const { currentUser, reservations, reserveMedicine } = useApp()
+  const isReserved = reservations.some(
+    (reservation) =>
+      reservation.userId === currentUser?.id &&
+      reservation.medicineId === result.medicineId &&
+      reservation.pharmacyId === result.pharmacyId &&
+      reservation.status !== 'Completed' &&
+      reservation.status !== 'Cancelled',
+  )
 
   return (
     <article className="card-hover rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
@@ -53,11 +61,29 @@ export default function PharmacyCard({ result }) {
         </Link>
         <button
           type="button"
-          onClick={() => showToast(`${result.medicine} reserved at ${result.pharmacy}`)}
-          disabled={!result.available}
-          className="flex-1 rounded-2xl bg-gradient-to-r from-teal-500 to-emerald-500 px-4 py-3 text-sm font-black text-white shadow-lg shadow-teal-500/20 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:from-slate-300 disabled:to-slate-400"
+          onClick={() =>
+            reserveMedicine({
+              medicineId: result.medicineId,
+              medicineName: result.medicine,
+              pharmacyId: result.pharmacyId,
+              pharmacyName: result.pharmacy,
+            })
+          }
+          disabled={!result.available || isReserved}
+          className={`flex-1 rounded-2xl px-4 py-3 text-sm font-black shadow-lg transition disabled:cursor-not-allowed ${
+            isReserved
+              ? 'bg-emerald-50 text-emerald-700 shadow-none dark:bg-emerald-400/10 dark:text-emerald-200'
+              : 'bg-gradient-to-r from-teal-500 to-emerald-500 text-white shadow-teal-500/20 hover:-translate-y-0.5 disabled:from-slate-300 disabled:to-slate-400'
+          }`}
         >
-          Reserve
+          {isReserved ? (
+            <span className="inline-flex items-center justify-center gap-2">
+              <CheckCircle2 size={16} />
+              Reserved
+            </span>
+          ) : (
+            'Reserve'
+          )}
         </button>
       </div>
     </article>

@@ -1,7 +1,13 @@
 export const users = [
-  { id: 1, name: 'Aarav Sharma', role: 'user', locality: 'Sector 21' },
-  { id: 2, name: 'City Medicos Owner', role: 'pharmacy', locality: 'MG Road' },
-  { id: 3, name: 'ArogyaMitra Admin', role: 'admin', locality: 'Operations' },
+  { id: 1, name: 'Aarav Sharma', email: 'user@arogyamitra.test', password: 'user123', role: 'user', locality: 'Sector 21' },
+  { id: 2, name: 'City Medicos Owner', email: 'pharmacy@arogyamitra.test', password: 'pharmacy123', role: 'pharmacy', locality: 'MG Road', pharmacyId: 1 },
+  { id: 3, name: 'ArogyaMitra Admin', email: 'admin@arogyamitra.test', password: 'admin123', role: 'admin', locality: 'Operations' },
+]
+
+export const reservations = [
+  { id: 1, userId: 1, medicineId: 1, pharmacyId: 1, status: 'Ready for pickup', quantity: 2, placedAt: 'Today, 10:30 AM' },
+  { id: 2, userId: 1, medicineId: 4, pharmacyId: 4, status: 'Confirmed', quantity: 4, placedAt: 'Yesterday, 7:15 PM' },
+  { id: 3, userId: 1, medicineId: 3, pharmacyId: 2, status: 'Completed', quantity: 1, placedAt: 'Apr 28, 6:05 PM' },
 ]
 
 export const medicines = [
@@ -27,6 +33,8 @@ export const pharmacies = [
     deliveryTime: '18 min',
     openUntil: '11:30 PM',
     verified: true,
+    lat: 28.6329,
+    lng: 77.2195,
   },
   {
     id: 2,
@@ -39,6 +47,8 @@ export const pharmacies = [
     deliveryTime: '24 min',
     openUntil: '10:00 PM',
     verified: true,
+    lat: 28.5908,
+    lng: 77.0806,
   },
   {
     id: 3,
@@ -51,6 +61,8 @@ export const pharmacies = [
     deliveryTime: '32 min',
     openUntil: '9:45 PM',
     verified: false,
+    lat: 28.5577,
+    lng: 77.2088,
   },
   {
     id: 4,
@@ -63,6 +75,8 @@ export const pharmacies = [
     deliveryTime: '12 min',
     openUntil: '24 hours',
     verified: true,
+    lat: 28.6448,
+    lng: 77.2167,
   },
 ]
 

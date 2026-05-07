@@ -1,6 +1,6 @@
-import { Package, Pill } from 'lucide-react'
+import { CheckCircle2, Package, Pill } from 'lucide-react'
 
-export default function MedicineCard({ item }) {
+export default function MedicineCard({ item, onReserve, reserved = false }) {
   const lowStock = item.stock <= 12
 
   return (
@@ -14,7 +14,7 @@ export default function MedicineCard({ item }) {
           <p className="text-xs font-bold text-slate-500">{item.category}</p>
         </div>
       </div>
-      <div className="mt-4 flex items-center justify-between">
+      <div className="mt-4 flex items-center justify-between gap-3">
         <span className="flex items-center gap-2 text-sm font-bold text-slate-500">
           <Package size={16} />
           {item.stock} units
@@ -23,6 +23,27 @@ export default function MedicineCard({ item }) {
           {lowStock ? 'Low stock' : 'Available'}
         </span>
       </div>
+      {onReserve && (
+        <button
+          type="button"
+          onClick={() => onReserve(item)}
+          disabled={item.stock <= 0 || reserved}
+          className={`mt-4 w-full rounded-2xl px-4 py-2.5 text-sm font-black shadow-lg disabled:cursor-not-allowed ${
+            reserved
+              ? 'bg-emerald-50 text-emerald-700 shadow-none dark:bg-emerald-400/10 dark:text-emerald-200'
+              : 'bg-teal-600 text-white shadow-teal-500/20 disabled:bg-slate-300'
+          }`}
+        >
+          {reserved ? (
+            <span className="inline-flex items-center justify-center gap-2">
+              <CheckCircle2 size={16} />
+              Reserved
+            </span>
+          ) : (
+            'Reserve'
+          )}
+        </button>
+      )}
     </div>
   )
 }

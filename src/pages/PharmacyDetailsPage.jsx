@@ -1,21 +1,38 @@
-import { MessageCircle, Navigation, Phone, ShieldCheck } from 'lucide-react'
+import { MessageCircle, Phone, ShieldCheck } from 'lucide-react'
 import { useMemo } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import MedicineCard from '../components/MedicineCard'
+import PharmacyMap from '../components/PharmacyMap'
 import { useApp } from '../hooks/useApp'
-import { inventory, medicines, pharmacies } from '../data/dummyData'
+import { getLiveMedicineListForPharmacy, getLivePharmacyById } from '../utils/liveData'
 
 export default function PharmacyDetailsPage() {
   const { id } = useParams()
-  const { showToast } = useApp()
-  const pharmacy = pharmacies.find((item) => item.id === Number(id)) || pharmacies[0]
+  const { currentUser, reservations, reserveMedicine } = useApp()
+  const pharmacy = getLivePharmacyById(id)
   const medicineList = useMemo(
-    () =>
-      inventory
-        .filter((item) => item.pharmacyId === pharmacy.id)
-        .map((item) => ({ ...item, ...medicines.find((medicine) => medicine.id === item.medicineId) })),
+    () => getLiveMedicineListForPharmacy(pharmacy.id),
     [pharmacy.id],
   )
+  const isReserved = (medicine) =>
+    reservations.some(
+      (reservation) =>
+        reservation.userId === currentUser?.id &&
+        reservation.medicineId === medicine.medicineId &&
+        reservation.pharmacyId === pharmacy.id &&
+        reservation.status !== 'Completed' &&
+        reservation.status !== 'Cancelled',
+    )
+  const firstAvailableMedicine = medicineList.find((item) => item.stock > 0 && !isReserved(item))
+  const allAvailableReserved = medicineList.some((item) => item.stock > 0) && !firstAvailableMedicine
+  const handleReserve = (medicine) => {
+    reserveMedicine({
+      medicineId: medicine.medicineId,
+      medicineName: medicine.name,
+      pharmacyId: pharmacy.id,
+      pharmacyName: pharmacy.name,
+    })
+  }
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -51,32 +68,28 @@ export default function PharmacyDetailsPage() {
             </a>
             <button
               type="button"
-              onClick={() => showToast(`Medicine reserved at ${pharmacy.name}`)}
-              className="rounded-2xl bg-gradient-to-r from-teal-500 to-emerald-500 px-4 py-3 font-black text-white shadow-lg shadow-teal-500/20"
+              onClick={() => firstAvailableMedicine && handleReserve(firstAvailableMedicine)}
+              disabled={!firstAvailableMedicine}
+              className={`rounded-2xl px-4 py-3 font-black shadow-lg disabled:cursor-not-allowed ${
+                allAvailableReserved
+                  ? 'bg-emerald-50 text-emerald-700 shadow-none dark:bg-emerald-400/10 dark:text-emerald-200'
+                  : 'bg-gradient-to-r from-teal-500 to-emerald-500 text-white shadow-teal-500/20 disabled:from-slate-300 disabled:to-slate-400'
+              }`}
             >
-              Reserve Medicine
+              {allAvailableReserved ? 'Reserved' : 'Reserve Medicine'}
             </button>
           </div>
 
           <h2 className="mt-8 text-2xl font-black">Available medicines</h2>
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             {medicineList.map((item) => (
-              <MedicineCard key={item.id} item={item} />
+              <MedicineCard key={item.id} item={item} onReserve={handleReserve} reserved={isReserved(item)} />
             ))}
           </div>
         </div>
 
         <aside className="grid gap-5">
-          <div className="relative min-h-80 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-900">
-            <div className="absolute inset-0 soft-grid" />
-            <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center text-center">
-              <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-500 text-white shadow-xl">
-                <Navigation size={28} />
-              </span>
-              <p className="mt-4 text-lg font-black">Map placeholder</p>
-              <p className="mt-1 text-sm font-semibold text-slate-500">API ready for Google Maps integration</p>
-            </div>
-          </div>
+          <PharmacyMap pharmacy={pharmacy} />
           <div className="rounded-2xl border border-rose-100 bg-rose-50 p-5 dark:border-rose-400/20 dark:bg-rose-400/10">
             <h3 className="font-black text-rose-700 dark:text-rose-200">Emergency highlight</h3>
             <p className="mt-2 text-sm font-semibold leading-6 text-rose-600 dark:text-rose-100">

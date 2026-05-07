@@ -1,11 +1,11 @@
 import { useMemo } from 'react'
-import { getSearchResults } from '../data/dummyData'
+import { getLiveSearchResults } from '../utils/liveData'
 
 export function useMedicineSearch(query, filters, sortBy) {
   return useMemo(() => {
     const normalized = query.trim().toLowerCase()
 
-    const filtered = getSearchResults().filter((item) => {
+    const filtered = getLiveSearchResults().filter((item) => {
       const matchesQuery =
         !normalized ||
         item.medicine.toLowerCase().includes(normalized) ||
