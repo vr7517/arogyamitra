@@ -1,9 +1,11 @@
 import { CheckCircle2, Clock, IndianRupee, MapPin, ShieldCheck, Star } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useApp } from '../hooks/useApp'
 
 export default function PharmacyCard({ result }) {
-  const { currentUser, reservations, reserveMedicine } = useApp()
+  const { currentUser, isAuthenticated, reservations, reserveMedicine } = useApp()
+  const location = useLocation()
+  const navigate = useNavigate()
   const isReserved = reservations.some(
     (reservation) =>
       reservation.userId === currentUser?.id &&
@@ -61,14 +63,18 @@ export default function PharmacyCard({ result }) {
         </Link>
         <button
           type="button"
-          onClick={() =>
+          onClick={() => {
+            if (!isAuthenticated) {
+              navigate('/login', { state: { from: location } })
+              return
+            }
             reserveMedicine({
               medicineId: result.medicineId,
               medicineName: result.medicine,
               pharmacyId: result.pharmacyId,
               pharmacyName: result.pharmacy,
             })
-          }
+          }}
           disabled={!result.available || isReserved}
           className={`flex-1 rounded-2xl px-4 py-3 text-sm font-black shadow-lg transition disabled:cursor-not-allowed ${
             isReserved

@@ -1,6 +1,6 @@
 import { MessageCircle, Phone, ShieldCheck } from 'lucide-react'
 import { useMemo } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import MedicineCard from '../components/MedicineCard'
 import PharmacyMap from '../components/PharmacyMap'
 import { useApp } from '../hooks/useApp'
@@ -8,7 +8,9 @@ import { getLiveMedicineListForPharmacy, getLivePharmacyById } from '../utils/li
 
 export default function PharmacyDetailsPage() {
   const { id } = useParams()
-  const { currentUser, reservations, reserveMedicine } = useApp()
+  const { currentUser, isAuthenticated, reservations, reserveMedicine } = useApp()
+  const location = useLocation()
+  const navigate = useNavigate()
   const pharmacy = getLivePharmacyById(id)
   const medicineList = useMemo(
     () => getLiveMedicineListForPharmacy(pharmacy.id),
@@ -26,6 +28,11 @@ export default function PharmacyDetailsPage() {
   const firstAvailableMedicine = medicineList.find((item) => item.stock > 0 && !isReserved(item))
   const allAvailableReserved = medicineList.some((item) => item.stock > 0) && !firstAvailableMedicine
   const handleReserve = (medicine) => {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: location } })
+      return
+    }
+
     reserveMedicine({
       medicineId: medicine.medicineId,
       medicineName: medicine.name,
